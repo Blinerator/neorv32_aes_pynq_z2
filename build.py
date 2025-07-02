@@ -1,33 +1,32 @@
 import subprocess
 import os
 
-def clean_untracked_in_syn():
+def clean_syn():
     syn_dir = "./syn"
+    keep_files = {"block_design.tcl", "constraints.xdc"}
 
-    # Get list of untracked files in syn/
-    try:
-        result = subprocess.run(
-            ["git", "ls-files", "--others", "--exclude-standard", syn_dir],
-            capture_output=True, text=True, check=True
-        )
-        untracked_files = result.stdout.strip().splitlines()
+    if not os.path.exists(syn_dir):
+        print(f"Directory '{syn_dir}' does not exist. Skipping cleanup.")
+        return
 
-        for path in untracked_files:
-            if os.path.isfile(path):
-                print(f"Removing untracked file: {path}")
-                os.remove(path)
-            elif os.path.isdir(path):
-                print(f"Removing untracked directory: {path}")
-                subprocess.run(["rm", "-rf", path], check=True)
-
-    except subprocess.CalledProcessError as e:
-        print("ERROR: Failed to get git untracked files.")
-        print(e)
+    for filename in os.listdir(syn_dir):
+        file_path = os.path.join(syn_dir, filename)
+        if filename not in keep_files:
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    print(f"Deleting file: {file_path}")
+                    os.remove(file_path)
+                elif os.path.isdir(file_path):
+                    print(f"Deleting directory: {file_path}")
+                    import shutil
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f"Failed to delete {file_path}: {e}")
 
 
 if __name__ == "__main__":
 
-    clean_untracked_in_syn()
+    clean_syn()
 
     tcl_script = "build.tcl"
     project_name = "aes_project"
@@ -40,6 +39,26 @@ if __name__ == "__main__":
     # Create TCL script
     with open(os.path.join("syn", tcl_script), "w") as f:
         f.write(f"""
+    set pass_banner {{
+     _____         _____ _____ 
+    |  __ \ /\    / ____/ ____|
+    | |__) /  \  | (___| (___  
+    |  ___/ /\ \  \___ \\___ \ 
+    | |  / ____ \ ____) |___) |
+    |_| /_/    \_\_____/_____/                     
+
+    }}
+
+    set fail_banner {{
+     ______      _____ _      
+    |  ____/\   |_   _| |     
+    | |__ /  \    | | | |     
+    |  __/ /\ \   | | | |     
+    | | / ____ \ _| |_| |____ 
+    |_|/_/    \_\_____|______|
+                            
+    }}
+                
     create_project {project_name} . -part {part} -force
 
     # Package neorv32 as IP
@@ -77,26 +96,6 @@ if __name__ == "__main__":
     set content [read $fp]
     close $fp
 
-    set pass_banner {{
-    _____         _____ _____ 
-    |  __ \ /\    / ____/ ____|
-    | |__) /  \  | (___| (___  
-    |  ___/ /\ \  \___ \\___ \ 
-    | |  / ____ \ ____) |___) |
-    |_| /_/    \_\_____/_____/                     
-
-    }}
-
-    set fail_banner {{
-    ______      _____ _      
-    |  ____/\   |_   _| |     
-    | |__ /  \    | | | |     
-    |  __/ /\ \   | | | |     
-    | | / ____ \ _| |_| |____ 
-    |_|/_/    \_\_____|______|
-                            
-    }}
-
     set success_string "write_bitstream completed successfully"
     if {{[string first $success_string $content] != -1}} {{
         puts "SUCCESS: Build complete."
@@ -104,10 +103,12 @@ if __name__ == "__main__":
         exit 0
     }} else {{
         puts "ERROR: Bitstream generation failed."
-        puts $fail_banner
+        puts "$fail_banner"
         exit 1
     }}
     """)
 
     # Run Vivado in batch mode
-    subprocess.run([vivado_path, "-mode", "batch", "-source", tcl_script], cwd="./syn")
+    subprocess.run([vivado_path, "-mode", "batch", "-source", tcl_script],
+                   cwd="./syn")
+    # TODO: pass/fail in python
