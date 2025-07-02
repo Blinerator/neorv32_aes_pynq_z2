@@ -1,0 +1,113 @@
+import subprocess
+import os
+
+def clean_untracked_in_syn():
+    syn_dir = "./syn"
+
+    # Get list of untracked files in syn/
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "--others", "--exclude-standard", syn_dir],
+            capture_output=True, text=True, check=True
+        )
+        untracked_files = result.stdout.strip().splitlines()
+
+        for path in untracked_files:
+            if os.path.isfile(path):
+                print(f"Removing untracked file: {path}")
+                os.remove(path)
+            elif os.path.isdir(path):
+                print(f"Removing untracked directory: {path}")
+                subprocess.run(["rm", "-rf", path], check=True)
+
+    except subprocess.CalledProcessError as e:
+        print("ERROR: Failed to get git untracked files.")
+        print(e)
+
+
+if __name__ == "__main__":
+
+    clean_untracked_in_syn()
+
+    tcl_script = "build.tcl"
+    project_name = "aes_project"
+    part = "xc7z020clg400-1"  # PYNQ-Z2
+    vivado_path = "E:\\Xilinx_Vivado\\Vivado\\2023.2\\bin\\vivado.bat"
+
+    # Build directory
+    os.makedirs("syn", exist_ok=True)
+
+    # Create TCL script
+    with open(os.path.join("syn", tcl_script), "w") as f:
+        f.write(f"""
+    create_project {project_name} . -part {part} -force
+
+    # Package neorv32 as IP
+    cd ../neorv32/rtl/system_integration/
+    source neorv32_vivado_ip.tcl
+    set_property  ip_repo_paths  ./neorv32_vivado_ip_work/packaged_ip [current_project]
+    update_ip_catalog
+    cd ../../../syn/
+
+    # add_files [glob ./neorv32/rtl/core/*.vhd]
+    # add_files [glob ./neorv32/rtl/system_integration/*.vhd]
+    add_files constraints.xdc
+
+    source block_design.tcl
+
+    make_wrapper -files [get_files ./{project_name}.srcs/sources_1/bd/block_design/block_design.bd] -top
+    add_files -norecurse ./{project_name}.srcs/sources_1/bd/block_design/hdl/block_design_wrapper.v
+    set_property top block_design_wrapper [current_fileset]
+
+    update_compile_order -fileset sources_1
+
+    launch_runs synth_1 -jobs 4
+    wait_on_run synth_1
+
+    launch_runs impl_1 -to_step write_bitstream -jobs 4
+    wait_on_run impl_1
+
+    set log_file "vivado.log"
+    if {{![file exists $log_file]}} {{
+        puts "ERROR: $log_file not found."
+        exit 1
+    }}
+
+    set fp [open $log_file r]
+    set content [read $fp]
+    close $fp
+
+    set pass_banner {{
+    _____         _____ _____ 
+    |  __ \ /\    / ____/ ____|
+    | |__) /  \  | (___| (___  
+    |  ___/ /\ \  \___ \\___ \ 
+    | |  / ____ \ ____) |___) |
+    |_| /_/    \_\_____/_____/                     
+
+    }}
+
+    set fail_banner {{
+    ______      _____ _      
+    |  ____/\   |_   _| |     
+    | |__ /  \    | | | |     
+    |  __/ /\ \   | | | |     
+    | | / ____ \ _| |_| |____ 
+    |_|/_/    \_\_____|______|
+                            
+    }}
+
+    set success_string "write_bitstream completed successfully"
+    if {{[string first $success_string $content] != -1}} {{
+        puts "SUCCESS: Build complete."
+        puts $pass_banner
+        exit 0
+    }} else {{
+        puts "ERROR: Bitstream generation failed."
+        puts $fail_banner
+        exit 1
+    }}
+    """)
+
+    # Run Vivado in batch mode
+    subprocess.run([vivado_path, "-mode", "batch", "-source", tcl_script], cwd="./syn")
