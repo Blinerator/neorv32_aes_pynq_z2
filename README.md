@@ -4,8 +4,8 @@ This is the central repository containing build scripts and dependencies to buil
 # Dependencies
 This build flow is intended for Vivado 2023.2, it is untested on other versions.
 
-To fetch dependencies, run the following command in this directory:
+To clone down this repository and all dependencies, run this command:
 
-`git clone git@github.com:Blinerator/neorv32.git --recurse-submodules`
+`git clone git@github.com:Blinerator/neorv32_aes_pynq_z2.git --recurse-submodules`
 
 
