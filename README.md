@@ -8,4 +8,13 @@ To clone down this repository and all dependencies, run this command:
 
 `git clone git@github.com:Blinerator/neorv32_aes_pynq_z2.git --recurse-submodules`
 
+Or, if the project has already been cloned down, run this command to initialize, fetch, and checkout submodules:
 
+`git submodule update --init --recursive`
+
+# Generating a bitstream
+The build.py script generates handles building the project from start to finish. It creates a Vivado project in the syn/ directory; if the block diagram needs to be changed, it should be modified in the Vivado GUI and then saved to syn/block_design.tcl. It will be automatically sourced on the next build.
+
+To run a build, execute the following in this directory:
+
+`py ./build.py`
