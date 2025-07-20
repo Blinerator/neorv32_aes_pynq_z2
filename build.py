@@ -1,5 +1,6 @@
 import subprocess
 import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def clean_syn():
     syn_dir = "./syn"
@@ -22,6 +23,16 @@ def clean_syn():
                     shutil.rmtree(file_path)
             except Exception as e:
                 print(f"Failed to delete {file_path}: {e}")
+
+def get_all_vhdl_files(root_dir):
+    vhdl_files = []
+    for dirpath, _, filenames in os.walk(root_dir):
+        for file in filenames:
+            if file.lower().endswith(".vhd"):
+                full_path = os.path.join(dirpath, file)
+                rel_path = os.path.relpath(full_path, root_dir)
+                vhdl_files.append(rel_path)
+    return vhdl_files
 
 
 if __name__ == "__main__":
@@ -68,9 +79,10 @@ if __name__ == "__main__":
     update_ip_catalog
     cd ../../../syn/
 
-    # add_files [glob ./neorv32/rtl/core/*.vhd]
-    # add_files [glob ./neorv32/rtl/system_integration/*.vhd]
+    add_files ../neorv32/rtl/aes_core/aes-128-fpga/src/aes_128_top_wrapper_simple.vhd
     add_files constraints.xdc
+
+    update_compile_order -fileset sources_1
 
     source block_design.tcl
 
