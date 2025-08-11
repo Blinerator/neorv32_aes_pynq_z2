@@ -50,7 +50,6 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
    create_project project_1 myproj -part xc7z020clg400-1
-   set_property BOARD_PART tul.com.tw:pynq-z2:part0:1.0 [current_project]
 }
 
 
@@ -614,10 +613,6 @@ proc create_root_design { parentCell } {
     CONFIG.PCW_SPI1_PERIPHERAL_ENABLE {0} \
     CONFIG.PCW_SPI_PERIPHERAL_CLKSRC {IO PLL} \
     CONFIG.PCW_SPI_PERIPHERAL_VALID {0} \
-    CONFIG.PCW_S_AXI_HP0_DATA_WIDTH {64} \
-    CONFIG.PCW_S_AXI_HP1_DATA_WIDTH {64} \
-    CONFIG.PCW_S_AXI_HP2_DATA_WIDTH {64} \
-    CONFIG.PCW_S_AXI_HP3_DATA_WIDTH {64} \
     CONFIG.PCW_TPIU_PERIPHERAL_CLKSRC {External} \
     CONFIG.PCW_TTC0_CLK0_PERIPHERAL_CLKSRC {CPU_1X} \
     CONFIG.PCW_TTC0_CLK0_PERIPHERAL_DIVISOR0 {1} \
@@ -753,7 +748,9 @@ proc create_root_design { parentCell } {
   set neorv32_vivado_ip_0 [ create_bd_cell -type ip -vlnv NEORV32:user:neorv32_vivado_ip:1.0 neorv32_vivado_ip_0 ]
   set_property -dict [list \
     CONFIG.DCACHE_EN {false} \
+    CONFIG.DMEM_EN {true} \
     CONFIG.ICACHE_EN {false} \
+    CONFIG.IMEM_EN {true} \
     CONFIG.IO_CFS_EN {true} \
     CONFIG.IO_CLINT_EN {true} \
     CONFIG.IO_DMA_EN {false} \
@@ -762,8 +759,6 @@ proc create_root_design { parentCell } {
     CONFIG.IO_UART0_EN {true} \
     CONFIG.IO_UART0_RX_FIFO {256} \
     CONFIG.IO_UART0_TX_FIFO {256} \
-    CONFIG.MEM_INT_DMEM_EN {true} \
-    CONFIG.MEM_INT_IMEM_EN {true} \
     CONFIG.XBUS_EN {false} \
   ] $neorv32_vivado_ip_0
 

@@ -15,7 +15,7 @@ Or, if the project has already been cloned down, run this command to initialize,
 `git submodule update --init --recursive`
 
 # Generating a bitstream
-The build.py script generates handles building the project from start to finish. It creates a Vivado project in the syn/ directory; if the block diagram needs to be changed, it should be modified in the Vivado GUI and then saved to syn/block_design.tcl. It will be automatically sourced on the next build.
+The build.py script handles building the project from start to finish. It creates a Vivado project in the syn/ directory; if the block diagram needs to be changed, it should be modified in the Vivado GUI and then exported to `syn/block_design.tcl`. It will be automatically sourced on the next build.
 
 To run a build, execute the following in this directory:
 
@@ -25,7 +25,7 @@ To run a build, execute the following in this directory:
 To load the bitstream onto the PYNQ-Z2 board, ensure you have the board configured according to the [PYNQ-Z2 Setup Guide](https://pynq.readthedocs.io/en/v2.3/getting_started/pynq_z2_setup.html). Assuming the board is connected to your computer via Ethernet, connect to the board at 192.168.2.99. The board may have a different default IP address. Run a program like [Angry IP Scanner](https://angryip.org/) to find the IP, it should look something like this:
 <img src="resources/ip_screenshot.jpg" alt="" width="400"/>
 
-After connecting to the board, Copy the hardware handoff file (`syn/aes_project.gen/sources_1/bd/block_design/hw_handoff/block_design.hwh`) and the bitstream (`syn/aes_project.runs/impl_1/block_design_wrapper.bit`) into `xilinx/jupyter_notebooks/aes_demo/`. Also create a new Python notebook called "aes_demo.ipynb". Make sure to rename the files as shown below.
+After connecting to the board, Copy the hardware handoff file (`syn/aes_project.gen/sources_1/bd/block_design/hw_handoff/block_design.hwh`) and the bitstream (`syn/aes_project.runs/impl_1/block_design_wrapper.bit`) into `xilinx/jupyter_notebooks/aes_demo/`. Also create a new Python notebook called `aes_demo.ipynb`. Make sure to rename the files as shown below.
 <img src="resources/file_path_screenshot.jpg" alt="" width="400"/>
 
 This notebook is only needed to load the bitstream. Create a cell with the following code, then run it:
