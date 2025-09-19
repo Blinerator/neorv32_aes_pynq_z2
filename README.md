@@ -1,5 +1,7 @@
 # Introduction
-This is the central repository containing build scripts and dependencies to build a NEORV32 RTL image targeting the PYNQ-Z2 board. This build flow is targeting a custom NEORV32 implementation, but can be modified for other version of the core as well. For details on re-configuring the NEORV32 core, refer to the [build.py](build.py) script.
+This is the central repository containing build scripts and dependencies to build a [NEORV32](https://stnolting.github.io/neorv32/#_overview) RTL image targeting the [PYNQ-Z2](https://www.amd.com/en/corporate/university-program/aup-boards/pynq-z2.html) board. This build flow is targeting a custom NEORV32 implementation, but can be modified for other version of the core as well. For details on re-configuring the NEORV32 core, refer to the [build.py](build.py) script.
+
+The purpose of this NEORV32 implementation is to add a custom AES-128 sub-module to the NEORV32 [Custom Functions Subsystem](https://stnolting.github.io/neorv32/#_custom_functions_subsystem_cfs) (CFS). The AES implementation can be found [here](https://github.com/Blinerator/aes-128-fpga). The project hierarchy is managed using git submodules.
 
 To interact with the NEORV32 core, the A0 and A1 GPIO pins on the devkit have been configured as TX and RX for the NEORV32 UART console.
 
